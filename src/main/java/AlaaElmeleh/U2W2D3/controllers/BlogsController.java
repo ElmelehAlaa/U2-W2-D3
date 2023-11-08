@@ -1,8 +1,10 @@
 package AlaaElmeleh.U2W2D3.controllers;
 
+import AlaaElmeleh.U2W2D3.entities.Author;
 import AlaaElmeleh.U2W2D3.entities.Blog;
 import AlaaElmeleh.U2W2D3.services.BlogsService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,8 +17,11 @@ import java.util.List;
         @Autowired
         private BlogsService blogsService;
 
-        @GetMapping("")
-        public List<Blog> getBlog(){return blogsService.getBlogs();}
+    @GetMapping("")
+    public Page<Blog> getBlog(@RequestParam(defaultValue = "0")int page,
+                                  @RequestParam(defaultValue = "10")int size,
+                                  @RequestParam(defaultValue = "id")String orderBy)
+    {return blogsService.getBlogs(page,size,orderBy);}
 
     @PostMapping("")
     @ResponseStatus(HttpStatus.CREATED)

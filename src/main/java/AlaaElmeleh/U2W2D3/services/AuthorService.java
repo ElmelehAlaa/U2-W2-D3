@@ -3,68 +3,51 @@ package AlaaElmeleh.U2W2D3.services;
 import AlaaElmeleh.U2W2D3.entities.Author;
 
 import AlaaElmeleh.U2W2D3.exceptions.NotFoundException;
+import AlaaElmeleh.U2W2D3.repositories.AuthorsRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Random;
+
 
 @Service
 public class AuthorService {
-    private List<Author> authors = new ArrayList<>();
+    @Autowired
+    private AuthorsRepository authorsRepository;
+
 
     public Author save(Author body){
-        Random rndm = new Random();
-        body.setId(rndm.nextLong(1,100000));
-        this.authors.add(body);
-        return body;
+
+
+        return authorsRepository.save(body);
     }
 
-    public List<Author> getAuthors(){return this.authors;}
+    public Page<Author> getAuthors(int page , int size, String orderBy){
+        Pageable pageable = PageRequest.of(page, size, Sort.by(orderBy));
+        return authorsRepository.findAll(pageable);}
 
-    public Author findById(long id){
-        Author a= null;
-        for( Author author : this.authors){
-            if(author.getId()==id){
-                a= author;
-            }
-        }
-        if(a == null){
-            throw new NotFoundException(id);
-        }else{
-            return a;
-        }
+    public Author findById(long id) throws NotFoundException{
+       return authorsRepository.findById(id).orElseThrow(() -> new NotFoundException(id));
     }
 
-    public void findByIdAndDelete(long id){
-        ListIterator<Author> iterator = this.authors.listIterator();
-        while (iterator.hasNext()){
-            Author current = iterator.next();
-            if(current.getId() == id){
-                iterator.remove();
-            }
-        }
+    public void findByIdAndDelete(long id) throws NotFoundException{
+        Author found = this.findById(id);
+        authorsRepository.delete(found);
     }
 
 
-    public Author findByIdAndUpdate (long id , Author body){
-        Author found = null;
-        for(Author author:this.authors){
-            if(author.getId()== id){
-                found = author;
-                found.setId(id);
+    public Author findByIdAndUpdate (long id , Author body) throws NotFoundException{
+               Author found = this.findById(id);
                 found.setNome(body.getNome());
                 found.setCognome(body.getCognome());
                 found.setEmail(body.getEmail());
                 found.setDataNascita(body.getDataNascita());
                 found.setAvatar(body.getAvatar());
-            }
-        }
-        if (found==null){
-            throw new NotFoundException(id);
-        }else {
-            return found;
-        }
+            return authorsRepository.save(found);
+
+
     }
 }

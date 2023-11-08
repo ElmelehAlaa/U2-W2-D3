@@ -4,6 +4,7 @@ package AlaaElmeleh.U2W2D3.controllers;
 import AlaaElmeleh.U2W2D3.entities.Author;
 import AlaaElmeleh.U2W2D3.services.AuthorService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,7 +17,10 @@ public class AuthorsController{
     private AuthorService authorService;
 
     @GetMapping("")
-    public List<Author> getAuthor(){return authorService.getAuthors();}
+    public Page<Author> getAuthor(@RequestParam(defaultValue = "0")int page,
+                                    @RequestParam(defaultValue = "10")int size,
+                                  @RequestParam(defaultValue = "id")String orderBy)
+    {return authorService.getAuthors(page,size,orderBy);}
 
     @PostMapping("")
     @ResponseStatus(HttpStatus.CREATED)

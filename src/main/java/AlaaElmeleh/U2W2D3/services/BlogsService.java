@@ -2,66 +2,48 @@ package AlaaElmeleh.U2W2D3.services;
 
 import AlaaElmeleh.U2W2D3.entities.Blog;
 import AlaaElmeleh.U2W2D3.exceptions.NotFoundException;
+import AlaaElmeleh.U2W2D3.repositories.BlogsRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Random;
 @Service
 public class BlogsService {
-    private List<Blog> blogs = new ArrayList<>();
+    @Autowired
+    private BlogsRepository blogsRepository;
 
     public Blog save(Blog body){
-        Random rndm = new Random();
-        body.setId(rndm.nextLong(1,100000));
-        this.blogs.add(body);
-        return body;
+
+        return blogsRepository.save(body);
     }
 
-    public List<Blog> getBlogs(){return this.blogs;}
+    public Page<Blog> getBlogs(int page , int size, String orderBy){
+        Pageable pageable = PageRequest.of(page, size, Sort.by(orderBy));
+        return blogsRepository.findAll(pageable);}
 
-    public Blog findById(long id){
-        Blog b= null;
-        for( Blog blog : this.blogs){
-            if(blog.getId()==id){
-                b= blog;
-            }
-        }
-        if(b == null){
-            throw new NotFoundException(id);
-        }else{
-            return b;
-        }
+    public Blog findById(long id) throws NotFoundException{
+        return blogsRepository.findById(id).orElseThrow(() -> new NotFoundException(id));
     }
 
-    public void findByIdAndDelete(long id){
-        ListIterator<Blog>iterator = this.blogs.listIterator();
-        while (iterator.hasNext()){
-            Blog current = iterator.next();
-            if(current.getId() == id){
-                iterator.remove();
-            }
-        }
+    public void findByIdAndDelete(long id) throws  NotFoundException{
+        Blog found = this.findById(id);
+        blogsRepository.delete(found);
+
     }
 
-    public Blog findByIdAndUpdate (long id , Blog body){
-        Blog found = null;
-        for(Blog blog:this.blogs){
-            if(blog.getId()== id){
-                found = blog;
-                found.setId(id);
+    public Blog findByIdAndUpdate (long id , Blog body) throws  NotFoundException{
+               Blog found = this.findById(id);
                 found.setContenuto(body.getContenuto());
                 found.setCategoria(body.getCategoria());
                 found.setTitolo(body.getTitolo());
                 found.setCover(body.getCover());
                 found.setTempoDiLettura(body.getTempoDiLettura());
-            }
-        }
-        if (found==null){
-            throw new NotFoundException(id);
-        }else {
-            return found;
-        }
+            return blogsRepository.save(found);
     }
 }
